@@ -9,7 +9,7 @@ import {
   DRAW,
 } from "constants/index";
 import {
-  changeCurrentPlayer,
+  changeCurrentPlayerIndex,
   resetBoard,
   setGameStatus,
   setNumberOfMoves,
@@ -17,7 +17,7 @@ import {
   updateBoard,
   resetPlayers,
 } from "store/actions";
-import { getPlayerIndexByGamingValue, getWinner } from "./helpers";
+import { getWinnerIndexByValue, getWinnerGamingValue } from "./helpers";
 
 import Box from "ui/Box";
 import Button from "ui/Button";
@@ -25,7 +25,7 @@ import Typography from "ui/Typography";
 import ResponsiveWrapper from "./components/ResponsiveWrapper";
 import ResponsiveSquare from "./components/ResponsiveSquare";
 
-const Board = () => {
+const GameBoard = () => {
   const { push } = useHistory();
   const { players, game } = useSelector((store) => store);
   const dispatch = useDispatch();
@@ -33,7 +33,7 @@ const Board = () => {
   const { firstPlayerName, secondPlayerName } = players;
   const { board, currentPlayerIndex, numberOfMoves, gameStatus, winner } = game;
 
-  const hasAccess = firstPlayerName || secondPlayerName;
+  const hasAccess = firstPlayerName && secondPlayerName;
   const isFirstPlayer = currentPlayerIndex === 0;
   const isGameDone = gameStatus === GAME_STATUSES.done;
 
@@ -47,14 +47,14 @@ const Board = () => {
 
   useEffect(() => {
     if (numberOfMoves >= 5) {
-      const gamingValue = getWinner(board);
-      const winnerValue = getPlayerIndexByGamingValue(gamingValue);
+      const winnerGamingValue = getWinnerGamingValue(board);
+      const winnerIndex = getWinnerIndexByValue(winnerGamingValue);
 
-      if (winnerValue !== null) {
+      if (winnerIndex !== null) {
         const winnerFinalValue =
-          winnerValue === 0
+          winnerIndex === 0
             ? firstPlayerName
-            : winnerValue === 1
+            : winnerIndex === 1
             ? secondPlayerName
             : DRAW;
 
@@ -77,7 +77,7 @@ const Board = () => {
 
       boardCopy[index] = currentPlayerGaminValue;
 
-      dispatch(changeCurrentPlayer(Number(isFirstPlayer)));
+      dispatch(changeCurrentPlayerIndex(Number(isFirstPlayer)));
       dispatch(updateBoard(boardCopy));
       dispatch(setNumberOfMoves(numberOfMoves + 1));
     },
@@ -93,19 +93,24 @@ const Board = () => {
     push("/");
   }, [dispatch, push]);
 
-  const currentPlayer = isFirstPlayer ? firstPlayerName : secondPlayerName;
+  const currentPlayer = isFirstPlayer
+    ? `${firstPlayerName} ❌`
+    : `${secondPlayerName} ⭕️`;
+
+  const winnerWithEmoji = winner === DRAW ? `${winner} 🤝` : `${winner} 🥇`;
 
   return (
     <ResponsiveWrapper>
       <Typography fontSize="1.5rem" margin="0px auto 8px">
         {isGameDone
-          ? `Winner is: ${winner}`
+          ? `Winner is: ${winnerWithEmoji}`
           : `Current player: ${currentPlayer}`}
       </Typography>
       <Box height="100%" width="100%">
         {board.map((value, i) => {
           return (
             <ResponsiveSquare
+              key={i}
               onClick={!isGameDone ? onSquareClick(i) : undefined}
             >
               <Typography fontSize="5rem" margin="0px auto">
@@ -123,4 +128,4 @@ const Board = () => {
   );
 };
 
-export default Board;
+export default GameBoard;

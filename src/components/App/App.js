@@ -3,18 +3,18 @@ import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
 
 import { BOARD_ROUTE } from "constants/index";
 
-import StartPage from "components/StartPage";
-import Board from "components/Board";
+import StartNewGame from "components/StartNewGame";
+import GameBoard from "components/GameBoard";
 
 const App = () => {
 	return (
 		<Router>
 			<Switch>
 				<Route path="/" exact>
-					<StartPage />
+					<StartNewGame />
 				</Route>
 				<Route path={BOARD_ROUTE}>
-					<Board />
+					<GameBoard />
 				</Route>
 			</Switch>
 		</Router>

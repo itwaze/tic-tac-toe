@@ -22,7 +22,7 @@ export const resetPlayers = () => {
   };
 };
 
-export const changeCurrentPlayer = (payload) => {
+export const changeCurrentPlayerIndex = (payload) => {
   return {
     type: SET_CURRENT_PLAYER_INDEX,
     payload,

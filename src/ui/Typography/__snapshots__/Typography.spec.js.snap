@@ -1,0 +1,11 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Typography should take a snapshot 1`] = `
+<DocumentFragment>
+  <span
+    class="sc-bdfBwQ gDKUml"
+  >
+    test text
+  </span>
+</DocumentFragment>
+`;

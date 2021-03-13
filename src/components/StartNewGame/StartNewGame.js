@@ -15,7 +15,7 @@ import {
 } from "constants/index";
 import { setPlayersName } from "store/actions";
 
-const StartPage = () => {
+const StartNewGame = () => {
   const { push } = useHistory();
   const [players, setPlayers] = useState({});
   const dispatch = useDispatch();
@@ -30,10 +30,18 @@ const StartPage = () => {
     setPlayers((prevState) => ({ ...prevState, [name]: value }));
   };
 
-  const firstPlayerValue = players[FIRST_PLAYER_NAME] || "";
-  const secondPlayerValue = players[SECOND_PLAYER_NAME] || "";
+  const firstPlayerName = players[FIRST_PLAYER_NAME] || "";
+  const secondPlayerName = players[SECOND_PLAYER_NAME] || "";
 
-  const isInvalid = !firstPlayerValue.trim() || !secondPlayerValue.trim();
+  const trimedFirstPlayerName = firstPlayerName.trim();
+  const trimedSecondPlayerName = secondPlayerName.trim();
+
+  const hasPlayesName = trimedFirstPlayerName && trimedSecondPlayerName;
+  const isEqualNames =
+    trimedFirstPlayerName.toLowerCase() ===
+    trimedSecondPlayerName.toLowerCase();
+
+  const isInvalid = !hasPlayesName || isEqualNames;
 
   return (
     <Form onSubmit={handleSubmit}>
@@ -44,7 +52,7 @@ const StartPage = () => {
         <Typography margin="0px 16px 0px 0px">Choose player 1 name:</Typography>
         <Input
           name={FIRST_PLAYER_NAME}
-          value={firstPlayerValue}
+          value={firstPlayerName}
           onChange={handleChange}
         />
       </Box>
@@ -52,7 +60,7 @@ const StartPage = () => {
         <Typography margin="0px 16px 0px 0px">Choose player 2 name:</Typography>
         <Input
           name={SECOND_PLAYER_NAME}
-          value={secondPlayerValue}
+          value={secondPlayerName}
           onChange={handleChange}
         />
       </Box>
@@ -63,4 +71,4 @@ const StartPage = () => {
   );
 };
 
-export default StartPage;
+export default StartNewGame;

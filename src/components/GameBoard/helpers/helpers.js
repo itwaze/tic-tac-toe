@@ -4,7 +4,7 @@ import {
   DRAW,
 } from "constants/index";
 
-export const getWinner = (board = []) => {
+export const getWinnerGamingValue = (board = []) => {
   const winningCombos = [
     [0, 1, 2],
     [3, 4, 5],
@@ -19,23 +19,21 @@ export const getWinner = (board = []) => {
   let winner = null;
 
   winningCombos.forEach((el) => {
-    const firstBoardElement = board[el[0]];
-
     if (
-      firstBoardElement &&
-      firstBoardElement === board[el[1]] &&
-      firstBoardElement === board[el[2]]
+      board[el[0]] &&
+      board[el[0]] === board[el[1]] &&
+      board[el[0]] === board[el[2]]
     ) {
       winner = board[el[0]];
     } else {
-      if (!board.includes(null)) winner = DRAW;
+      if (!!board.length && !board.includes(null)) winner = DRAW;
     }
   });
 
   return winner;
 };
 
-export const getPlayerIndexByGamingValue = (value) => {
+export const getWinnerIndexByValue = (value) => {
   switch (value) {
     case FIRST_PLAYER_GAMING_VALUE:
       return 0;
