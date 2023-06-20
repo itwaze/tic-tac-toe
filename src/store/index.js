@@ -1,5 +1,7 @@
-import { createStore } from "redux";
+import { combineReducers, createStore } from "redux";
 
-import rootReducer from "./reducers";
+import { gameReducer, playersReducer } from "./reducers";
 
-export default createStore(rootReducer);
+export const store = createStore(
+  combineReducers({ game: gameReducer, players: playersReducer })
+);
