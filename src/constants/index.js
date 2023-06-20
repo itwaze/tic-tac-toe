@@ -1,14 +1,7 @@
-export const FIRST_PLAYER_NAME = "firstPlayerName";
-export const SECOND_PLAYER_NAME = "secondPlayerName";
+export const FIRST_PLAYER_MARKER = "X";
+export const SECOND_PLAYER_MARKER = "O";
 export const BOARD_ROUTE = "/board";
-export const FIRST_PLAYER_GAMING_VALUE = "X";
-export const SECOND_PLAYER_GAMING_VALUE = "O";
 export const DRAW = "Draw";
-export const GAME_STATUSES = {
-  pending: "pending",
-  inProgress: "in progress",
-  done: "done",
-};
 
 export const breakpoints = {
   mobileS: "320px",

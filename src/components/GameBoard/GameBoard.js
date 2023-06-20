@@ -1,130 +1,101 @@
-import React, { useEffect, useCallback } from "react";
-import { useHistory } from "react-router-dom";
+/* eslint-disable react/display-name */
+import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-
+import { useNavigate } from "react-router-dom";
 import {
-  FIRST_PLAYER_GAMING_VALUE,
-  SECOND_PLAYER_GAMING_VALUE,
-  GAME_STATUSES,
   DRAW,
-} from "constants/index";
+  FIRST_PLAYER_MARKER,
+  SECOND_PLAYER_MARKER,
+} from "../../constants";
+import { getCurrentPlayerMarker, getWinner } from "../../helpers";
 import {
-  changeCurrentPlayerIndex,
   resetBoard,
-  setGameStatus,
-  setNumberOfMoves,
+  resetPlayers,
   setWinner,
   updateBoard,
-  resetPlayers,
-} from "store/actions";
-import { getWinnerIndexByValue, getWinnerGamingValue } from "./helpers";
-
-import Box from "ui/Box";
-import Button from "ui/Button";
-import Typography from "ui/Typography";
-import ResponsiveWrapper from "./components/ResponsiveWrapper";
-import ResponsiveSquare from "./components/ResponsiveSquare";
+} from "../../store/actions";
+import { getGameSelector, getPlayersSelector } from "../../store/selectors";
+import { Button } from "../Button";
+import {
+  ButtonGroup,
+  Deck,
+  Marker,
+  SquareBox,
+  StatusHeader,
+  Wrapper,
+} from "./styles";
 
 const GameBoard = () => {
-  const { push } = useHistory();
-  const { players, game } = useSelector((store) => store);
+  const push = useNavigate();
+  const players = useSelector(getPlayersSelector);
+  const game = useSelector(getGameSelector);
   const dispatch = useDispatch();
 
-  const { firstPlayerName, secondPlayerName } = players;
-  const { board, currentPlayerIndex, numberOfMoves, gameStatus, winner } = game;
-
-  const hasAccess = firstPlayerName && secondPlayerName;
-  const isFirstPlayer = currentPlayerIndex === 0;
-  const isGameDone = gameStatus === GAME_STATUSES.done;
-
-  const redirectUserWithoutAccess = useCallback(() => {
-    if (!hasAccess) push("/");
-  }, [hasAccess, push]);
+  const firstPlayer = players[FIRST_PLAYER_MARKER];
+  const secondPlayer = players[SECOND_PLAYER_MARKER];
 
   useEffect(() => {
-    redirectUserWithoutAccess();
-  }, [redirectUserWithoutAccess]);
+    if (!firstPlayer || !secondPlayer) push("/", { replace: true });
+  }, [firstPlayer, push, secondPlayer]);
+
+  const { board, currentPlayerMarker, numberOfMoves, winner } = game;
+
+  const isGameDone = Boolean(winner);
 
   useEffect(() => {
-    if (numberOfMoves >= 5) {
-      const winnerGamingValue = getWinnerGamingValue(board);
-      const winnerIndex = getWinnerIndexByValue(winnerGamingValue);
+    if (numberOfMoves < 5) return;
 
-      if (winnerIndex !== null) {
-        const winnerFinalValue =
-          winnerIndex === 0
-            ? firstPlayerName
-            : winnerIndex === 1
-            ? secondPlayerName
-            : DRAW;
+    const winner = getWinner(board, players);
 
-        dispatch(setGameStatus(GAME_STATUSES.done));
-        dispatch(setWinner(winnerFinalValue));
-      }
-    }
+    if (!winner) return;
 
-    if (numberOfMoves === 1) dispatch(setGameStatus(GAME_STATUSES.inProgress));
-  }, [board, numberOfMoves, dispatch, firstPlayerName, secondPlayerName]);
+    dispatch(setWinner(winner));
+  }, [board, dispatch, firstPlayer, numberOfMoves, players, secondPlayer]);
 
-  const onSquareClick = useCallback(
-    (index) => () => {
-      const boardCopy = [...board];
-      const currentPlayerGaminValue = isFirstPlayer
-        ? FIRST_PLAYER_GAMING_VALUE
-        : SECOND_PLAYER_GAMING_VALUE;
+  const onSquareClick = (index) => {
+    dispatch(updateBoard(index));
+  };
 
-      if (boardCopy[index]) return;
+  const winnerText =
+    winner === DRAW ? `${winner} 🤝` : `Winner is: ${winner} 🥇`;
 
-      boardCopy[index] = currentPlayerGaminValue;
-
-      dispatch(changeCurrentPlayerIndex(Number(isFirstPlayer)));
-      dispatch(updateBoard(boardCopy));
-      dispatch(setNumberOfMoves(numberOfMoves + 1));
-    },
-    [dispatch, isFirstPlayer, board, numberOfMoves]
-  );
-
-  const onRestartGame = useCallback(() => {
-    dispatch(resetBoard());
-  }, [dispatch]);
-
-  const onNewGame = useCallback(() => {
-    dispatch(resetPlayers());
-    push("/");
-  }, [dispatch, push]);
-
-  const currentPlayer = isFirstPlayer
-    ? `${firstPlayerName} ❌`
-    : `${secondPlayerName} ⭕️`;
-
-  const winnerWithEmoji = winner === DRAW ? `${winner} 🤝` : `${winner} 🥇`;
+  const playerName = players[currentPlayerMarker];
 
   return (
-    <ResponsiveWrapper>
-      <Typography fontSize="1.5rem" margin="0px auto 8px">
-        {isGameDone
-          ? `Winner is: ${winnerWithEmoji}`
-          : `Current player: ${currentPlayer}`}
-      </Typography>
-      <Box height="100%" width="100%">
-        {board.map((value, i) => {
+    <Wrapper>
+      <StatusHeader>
+        {isGameDone ? winnerText : `Now ${playerName} turn`}
+      </StatusHeader>
+      <Deck>
+        {/* convert to regular array that React can understand */}
+        {[...board].map((value, i) => {
           return (
-            <ResponsiveSquare
+            <SquareBox
               key={i}
-              onClick={!isGameDone ? onSquareClick(i) : undefined}
+              onClick={() => (!isGameDone ? onSquareClick(i) : undefined)}
             >
-              <Typography fontSize="5rem" margin="0px auto">
-                {value}
-              </Typography>
-            </ResponsiveSquare>
+              <Marker>{getCurrentPlayerMarker(value)}</Marker>
+            </SquareBox>
           );
         })}
-      </Box>
-      <Box justify="space-between" width="100%" margin="16px 0px 0px">
-        <Button onClick={onRestartGame}>Restart Game</Button>
-        <Button onClick={onNewGame}>New Game</Button>
-      </Box>
-    </ResponsiveWrapper>
+      </Deck>
+      <ButtonGroup>
+        <Button
+          disabled={!numberOfMoves}
+          onClick={() => dispatch(resetBoard())}
+        >
+          Restart Game
+        </Button>
+        <Button
+          onClick={() => {
+            dispatch(resetPlayers());
+            dispatch(resetBoard());
+          }}
+        >
+          New Game
+        </Button>
+      </ButtonGroup>
+    </Wrapper>
   );
 };
 
